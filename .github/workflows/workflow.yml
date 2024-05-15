@@ -17,6 +17,10 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+        
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -34,3 +38,15 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test with pytest
+        run: pytest tests.py --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+      - name: Upload pytest test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results-${{ matrix.python-version }}
+          path: junit/test-results-${{ matrix.python-version }}.xml
+        if: ${{ always() }}
